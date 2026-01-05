@@ -17,7 +17,7 @@
   <style>
     /* 4-up grid instead of 3 */
     main.grid.music{
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
 
     @media (max-width: 900px){
@@ -47,21 +47,12 @@
     </header>
 
     <main class="grid music" aria-label="Music sections">
-      <!-- DJ gigs -->
-      <a class="card tilt-1" href="yak.html">
-        <div>
-          <img src="images/muziek/yak/YAK_cover.JPG" alt="" class="card-image" />
-          <div class="label" data-i18n="dj_label">YAK LIVE</div>
-          <div class="meta" data-i18n="dj_meta">gigs at clubs and festivals</div>
-        </div>
-      </a>
-
-      <!-- Radio -->
-      <a class="card tilt-2" href="radio.html">
+          <!-- Radio -->
+      <a class="card tilt-2" href="yak.html">
         <div>
           <img src="images/muziek/yak/RADIO_cover.JPG" alt="" class="card-image" />
-          <div class="label" data-i18n="radio_label">YAK RADIO</div>
-          <div class="meta" data-i18n="radio_meta">online radio shows & mixes</div>
+          <div class="label" data-i18n="radio_label">YAK</div>
+          <div class="meta" data-i18n="radio_meta">dj gigs & online radio shows</div>
         </div>
       </a>
 
@@ -102,10 +93,8 @@
       var dict = {
         nl: {
           name: "YA'GEL SCHOONDERBEEK",
-          dj_label: "YAK LIVE",
-          dj_meta: "gigs at clubs and festivals",
           radio_label: "YAK RADIO",
-          radio_meta: "online radio shows & mixes",
+          radio_meta: "dj gigs & online radio shows",
           mp_label: "MPSOUNDSYSTEM",
           mp_meta: "marktplaats afstruinen om samen cultuur te maken",
           studio_label: "STUDIO",
@@ -115,10 +104,8 @@
         },
         en: {
           name: "YA'GEL SCHOONDERBEEK",
-          dj_label: "YAK LIVE",
-          dj_meta: "gigs at clubs and festivals",
           radio_label: "YAK RADIO",
-          radio_meta: "online radio shows & mixes",
+          radio_meta: "dj gigs & online radio shows",
           mp_label: "MPSOUNDSYSTEM",         
           mp_meta: "roaming marktplaats to make culture together",
           studio_label: "STUDIO",

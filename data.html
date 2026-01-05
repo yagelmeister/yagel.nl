@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yagel.nl – data</title>
+  <meta name="description" content="Data: AFC Ajax, NIDAP, Studies." />
+
+  <link rel="stylesheet" href="styling.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* data page grid: 3 tiles like home */
+    main.grid.data{
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 900px){
+      main.grid.data{
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px){
+      main.grid.data{
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="topbar" aria-label="Taal kiezen">
+        <button class="lang-btn" type="button" data-lang="nl" aria-pressed="true">nl</button>
+        <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">en</button>
+      </div>
+
+      <div class="name" data-i18n="name">YA'GEL SCHOONDERBEEK</div>
+      <div class="rule"></div>
+    </header>
+
+    <main class="grid data" aria-label="Data sections">
+      <a class="card tilt-1" href="ajax.html">
+        <div>
+          <img src="images/data/ajax/ajax heatmap parameters.png" alt="" class="card-image" />
+          <div class="label" data-i18n="ajax_label">AFC AJAX</div>
+          <div class="meta" data-i18n="ajax_meta">researching football movement during passes</div>
+        </div>
+      </a>
+
+      <a class="card tilt-2" href="nidap.html">
+        <div>
+          <img src="images/data/nidap/spreiding.png" alt="" class="card-image" />
+          <div class="label" data-i18n="nidap_label">NIDAP</div>
+          <div class="meta" data-i18n="nidap_meta">data of the educational market</div>
+        </div>
+      </a>
+
+      <a class="card tilt-3" href="studie.html">
+        <div>
+          <img src="images/data/studies_cover.jpg" alt="" class="card-image" />
+          <div class="label" data-i18n="studies_label">STUDIES</div>
+          <div class="meta" data-i18n="studies_meta">models created at the university</div>
+        </div>
+      </a>
+    </main>
+
+    <footer>
+      <a class="pill" href="home.html" data-i18n="pill_home">HOME</a>
+      <a class="pill" href="#" id="contactLink" data-i18n="pill_contact">CONTACT</a>
+    </footer>
+  </div>
+
+  <script>
+    (function(){
+      var savedTheme = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", savedTheme || "auto");
+    })();
+
+    (function(){
+      var dict = {
+        nl: {
+          name: "YA'GEL SCHOONDERBEEK",
+          ajax_label: "AFC AJAX",
+          ajax_meta: "onderzoek naar voetbalbeweging tijdens passes",
+          nidap_label: "NIDAP",
+          nidap_meta: "data over de onderwijsmarkt",
+          studies_label: "STUDIES",
+          studies_meta: "modellen gebouwd op de universiteit",
+          pill_home: "HOME",
+          pill_contact: "CONTACT"
+        },
+        en: {
+          name: "YA'GEL SCHOONDERBEEK",
+          ajax_label: "AFC AJAX",
+          ajax_meta: "researching football movement during passes",
+          nidap_label: "NIDAP",
+          nidap_meta: "data of the educational market",
+          studies_label: "STUDIES",
+          studies_meta: "models created at the university",
+          pill_home: "HOME",
+          pill_contact: "CONTACT"
+        }
+      };
+
+      function applyLang(lang){
+        var pack = dict[lang] || dict.nl;
+        document.documentElement.lang = lang;
+
+        document.querySelectorAll("[data-i18n]").forEach(function(el){
+          var key = el.getAttribute("data-i18n");
+          if(pack[key]) el.textContent = pack[key];
+        });
+
+        document.querySelectorAll(".lang-btn").forEach(function(btn){
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+        });
+
+        localStorage.setItem("lang", lang);
+      }
+
+      var initial = localStorage.getItem("lang") || "nl";
+      applyLang(initial);
+
+      document.querySelectorAll(".lang-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          applyLang(btn.getAttribute("data-lang"));
+        });
+      });
+    })();
+
+    (function(){
+      const user = "yagelschoonderbeek";
+      const domain = "gmail.com";
+      const link = document.getElementById("contactLink");
+      if(!link) return;
+
+      link.addEventListener("click", function(e){
+        e.preventDefault();
+        window.location.href = "mailto:" + user + "@" + domain;
+      });
+    })();
+  </script>
+</body>
+</html>

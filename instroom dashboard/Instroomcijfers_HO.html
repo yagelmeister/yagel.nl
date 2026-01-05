@@ -1,0 +1,1839 @@
+<!-- Eerste scherm:
+   
+- Opzoeken opleiding
+
+Ik zou hier altijd labels tonen, anders kan je niets met het overzicht. Maar beperk de labels tot de categorienaam
+-->
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instroom per domein (HBO en WO) – Wizard + Styling</title>
+  <!-- Fonts & Libraries -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+  <style>
+  /* ==========================================================================
+    RESET
+    ========================================================================== */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ==========================================================================
+    DESIGN TOKENS
+    ========================================================================== */
+  :root {
+    /* Colors */
+    --c-green: #184731;
+    --c-green-dark: #0f2f20;
+    --c-bg: #F7F7F7;
+    --c-border: #DDD;
+
+    /* Shadows & Borders */
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+
+    /* Typography */
+    --font: 'Inter', sans-serif;
+  }
+
+  /* ==========================================================================
+    GLOBAL LAYOUT
+    ========================================================================== */
+  html,
+  body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--c-bg);
+    color: #000;
+  }
+
+  /* Wizard wrapper ensures steps stack vertically */
+  #wizard {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  /* Hide all steps by default; only .active is shown */
+  .step {
+    display: none;
+  }
+  .step.active {
+    display: block;
+  }
+
+  /* ==========================================================================
+    BASIC UI ELEMENTS
+    ========================================================================== */
+  h2 {
+    color: var(--c-green);
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+  }
+
+  p {
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+
+  /* Standard button styles */
+  .button,
+  .filter-btn,
+  .submenu-btn {
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+  }
+
+  .button {
+    background: var(--c-green);
+    color: #fff;
+  }
+  .button:hover {
+    background: var(--c-green-dark);
+  }
+
+  .filter-btn {
+    background: var(--c-bg);
+    border: 1px solid #ccc;
+    color: #000;
+  }
+  .filter-btn:hover {
+    background: #e4e4e4;
+  }
+
+  /* Submenu button group */
+  .submenu-btn {
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    background: var(--c-bg);
+    border: 1px solid var(--c-green);
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .submenu-btn:last-child {
+    margin-right: 0;
+  }
+  .submenu-btn:hover {
+    background: #e4e4e4;
+  }
+
+  /* Back buttons with distinct styling */
+  #back-to-start, #back-to-step-2,
+  #exportChartBtn, #mailNidap,
+  #zoek-opleiding, #to-step-1 {
+    background-color: #535252;
+  }
+  #back-to-start:hover,
+  #back-to-step-2:hover,
+  #exportChartBtn:hover,
+  #mailNidap:hover,
+  #zoek-opleiding:hover,
+  #to-step-1:hover {
+    background-color: #797979;
+  }
+
+  /* ==========================================================================
+    SWITCH COMPONENT (Compact)
+    ========================================================================== */
+  .categorie-switch {
+    display: flex;
+    align-items: center;
+    gap: 2rem; /* space between switch & dropdown */
+  }
+
+  .switch.small {
+    position: relative;
+    display: inline-block;
+    width: 70px;
+    height: 43px;
+  }
+
+  .switch.small input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .switch.small .slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .switch.small .slider::before {
+    content: 'ISCED';
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+  }
+
+  .switch.small input:checked + .slider::before {
+    left: calc(100% - 42px);
+    content: 'NIDAP';
+  }
+
+  /* ==========================================================================
+    TOOLTIP
+    ========================================================================== */
+  .tooltip {
+    position: relative;
+    cursor: help;
+    display: inline-block;
+  }
+
+  .tooltip-text {
+    position: absolute;
+    top: 125%;
+    left: 50%;
+    font-weight: 300;
+    transform: translateX(-30%);
+    visibility: hidden;
+    opacity: 0;
+    width: 260px;
+    max-width: 90vw;
+    padding: 0.75rem;
+    background: var(--c-green);
+    color: #fff;
+    border-radius: var(--radius);
+    transition: opacity 0.3s;
+    z-index: 10;
+    font-size: small;
+  }
+
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* ==========================================================================
+    FILTER PANEL
+    ========================================================================== */
+  .categorie-panel {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+  }
+
+  /* Grid of category checkboxes */
+  .categorie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .categorie-grid label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  /* Filter rows and labels */
+  .filter-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-row > div {
+    flex: 0.1 1 auto;
+  }
+
+  .filter-row strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--c-green);
+  }
+
+  .filter-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--c-green);
+  }
+
+  /* ==========================================================================
+    CHART CONTAINER & CONTROLS
+    ========================================================================== */
+  #chart-container {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 2rem;
+    width: 80%;
+    max-width: 1000px;
+    max-height: 600px;
+  }
+
+  #chart-container canvas {
+    width: 100% !important;
+    max-width: 1000px;
+    max-height: 600px;
+    display: block;
+    cursor: grab; /* show grab cursor for zoom */
+  }
+
+  /* Controls wrapper under the chart */
+  #controls-container {
+    width: 80%;
+    z-index: 2;
+    max-width: 1000px;
+    margin-top: 3rem;
+    position: relative;
+    padding-top: 1rem;
+  }
+
+  /* Chart buttons (zoom, export, etc.) */
+  .chart-buttons {
+    position: absolute;
+    bottom: 1rem;
+    right: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 0.5rem;
+  }
+
+  /* Overlay toggles for outliers, annotations, etc. */
+  .chart-overlay-left {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 0.5rem;
+  }
+
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Make the actual checkbox small and non-blocking */
+  .chart-overlay-left .toggle-btn input[type="checkbox"] {
+    margin-right: 8px;
+    pointer-events: none;
+  }
+
+  /* ==========================================================================
+    MODALS & OVERLAYS
+    ========================================================================== */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .overlay-content {
+    background: #fff;
+    padding: 1.5rem;
+    max-width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+    border-radius: var(--radius);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: white;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #333;
+    z-index: 1010;
+  }
+  .close-btn:hover {
+    color: #000;
+  }
+
+  #overlayText {
+    white-space: pre-wrap;
+    font-size: small;
+  }
+
+  /* ==========================================================================
+    LOADING SPINNER
+    ========================================================================== */
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #333;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+  }
+
+  @keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  </style>
+</head>
+<body>
+<div id="wizard">
+  <!-- STEP 0 -->
+  <section id="step-0" class="step active">
+    <div style="display:flex; align-items:flex-start; gap:2rem;">
+      <div style="flex:1;">
+        <h2>Korte uitleg</h2>
+        <p>
+          Met deze tool kan je een grafiek (zie voorbeeld rechts) produceren waarin je opleidingscategorieën in het hoger onderwijs vergelijkt op instroomtrend.<br><br>
+          Hiervoor doorloop je eerst 2 stappen:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. De opleidingscategorieën selecteren die je wilt meenemen in de analyse<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. Maak een keuze uit hbo/wo en het type opleidingen (bachelor, master, ad) dat je wilt meenemen.
+        </p>
+        <button id="start_analyse" class="button" style="margin-top:1rem">Start dashboard</button>
+      </div>
+      <div style="flex:1;">
+        <h2>Voorbeeld (screenshot)</h2>
+        <img src="Voorbeeld_Instroomcijfers.png" alt="logo" style="width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px;">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========= STEP 1 ========= -->
+  <section id="step-1" class="step">
+    <h2>Stap 1: Selecteer categorieën</h2>
+    <p>
+      Kies voor welke domeinen je de instroomdata wilt bekijken.<br>
+      Voor deze domeinen zullen de instroomcijfers in relatie tot het aantal opleidingen getoond worden.<br><br>
+      Via de <i>zoek opleiding</i> knop, kan je de categorie die bij jouw opleiding hoort vinden.<br><br>
+      <b>Let op!</b> Hoe meer categoriën je selecteert, hoe drukker de figuur wordt.
+    </p>
+    <div class="categorie-switch">
+      <!-- dataset-schakelaar -->
+      <div style="display:flex;flex-direction: column; justify-content: flex-start; align-self: flex-start; justify-self: flex-start;">
+        <strong>Indeling:&nbsp;
+          <span class="tooltip">&#9432;
+            <span class="tooltip-text">Kies tussen de internationaal gebruikte ISCED-indeling of de door NIDAP ontwikkelde indeling.<br><br>De NIDAP indeling maakt het vergelijken tussen HBO- en WO-opleidingen inzichtelijker.</span>
+          </span>
+        </strong>
+        <div style="height: 1rem;"></div>
+        <label class="switch small">
+          <input type="checkbox" id="datasetToggle">
+          <span class="slider dataset-slider"></span>
+        </label>
+      </div>
+
+      <!-- bestaande categorie-dropdown blijft ongewijzigd -->
+      <div style="width: 80%;">
+        <strong>Categorieën:&nbsp;
+          <span class="tooltip">&#9432;
+            <span class="tooltip-text">Selecteer één of meerdere domeinen uit de ISCED- of NIDAP-indeling.</span>
+          </span>
+        </strong>
+
+        <div style="height: 1rem;"></div>
+        <button type="button" id="menuSelectAll" class="submenu-btn">Selecteer alles</button>
+        <button type="button" id="menuClearAll" class="submenu-btn">Wis selectie</button>
+        <div style="height: 1rem;"></div>
+        <div id="categorieGrid" class="categorie-grid"></div>
+      </div>
+    </div>
+    <button id="zoek-opleiding" class="button">Zoek opleiding op</button>
+    <button id="to-step-2" class="button" style="margin-top:1rem">Volgende stap</button>
+  </section>
+
+  <!-- ========= STEP 1.1 ========= -->
+  <section id="step-1.1" class="step">
+    <h2>Tussenstap: Zoek opleiding op</h2>
+    <p>Kies hieronder een opleiding en zie meteen bij welke categorie deze hoort.</p>
+
+    <!-- Toggle synchroon met step 1 -->
+    <div style="margin-bottom:1rem;">
+      <strong>Indeling:</strong><br>
+      <label class="switch small">
+        <input type="checkbox" id="zoekToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <label for="opleidingSelectie">Selecteer een opleiding:</label>
+    <select id="opleidingSelectie" style="width:100%"></select>
+
+    <div id="categorieResultaat" style="margin-top:1rem; display:none;">
+      <strong>Categorie:</strong>
+      <div id="categorieLink" 
+          style="margin-top:0.5rem; cursor:pointer; padding:0.5rem; border:1px solid #ccc; border-radius:6px; background:#f9f9f9;">
+      </div>
+    </div>
+
+    <button id="opleiding-opgezocht" class="button" style="margin-top:1rem">Klaar</button>
+  </section>
+
+
+  <!-- ========= STEP 2 ========= -->
+  <section id="step-2" class="step">
+    <h2>Stap 2: Filter instellingen</h2>
+    <p>
+      Maak een keuze uit het opleidingsniveau en het type opleidingen dat je wilt meenemen.<br><br>
+      <b>Let op!</b> Hoe meer je selecteert, hoe drukker de figuur wordt.
+    </p>
+    <div class="filter-row">
+      <div>
+        <strong>Niveau:</strong>
+        <label><input type="checkbox" class="niveauFilter" value="hbo"> HBO</label>
+        <label><input type="checkbox" class="niveauFilter" value="wo"> WO</label>
+      </div>
+      <div>
+        <strong>Opleidingstype:</strong>
+        <label><input type="checkbox" class="typeFilter" value="Ad"> Ad</label>
+        <label><input type="checkbox" class="typeFilter" value="Bachelor"> Bachelor</label>
+        <label><input type="checkbox" class="typeFilter" value="Master"> Master</label>
+      </div>
+    </div>
+
+    <!-- <div style="margin-bottom:1rem;">
+      <strong>Opties voor uitschieters:&nbsp;
+        <span class="tooltip">&#9432;
+          <span class="tooltip-text">Voor een beter leesbare grafiek zijn er twee opties:<br><br>1. Verberg uitschieters zodat ze helemaal niet getoond worden.<br><br>2. Beperk uitschieters tot een waarde van 200% in de grafiek. Ze worden dan wel getoond, maar op geforceerd neergezet op de maximum waarde van de grafiek.</span>
+        </span>
+      </strong><br>
+      <label><input checked=false type="checkbox" id="filterOutliersCheckbox"> Verberg</label>
+      <label><input type="checkbox" id="capOutliersCheckbox"> Beperk</label>
+    </div> -->
+
+    <button id="to-step-1" class="button">Ga terug</button>
+    <button id="to-step-3" class="button">Toon data</button>
+  </section>
+
+  <!-- ========= STEP 3 ========= -->
+  <section id="step-3" class="step">
+    <div id="chart-container">
+      <canvas id="bubbleChart"></canvas>
+    </div>
+    <div id="controls-container">
+      <!-- nieuwe controls links-onder -->
+      <div class="chart-overlay-left">
+        <button id="exportChartBtn" class="button">Download afbeelding</button>
+        <button id="btn-filter-outliers" class="button toggle-btn">
+          <input id="btn-filter-outliers-checkbox" type="checkbox" readonly> Verberg uitschieters
+        </button>
+        <button id="mailNidap" class="button">Meer informatie</button>
+        <button id="btn-cap-outliers" class="button toggle-btn">
+          <input id="btn-cap-outliers-checkbox" type="checkbox" readonly> Beperk uitschieters
+        </button>
+      </div>
+
+      <div class="chart-buttons">
+        <button id="back-to-start" class="button">Terug naar stap 1</button>
+        <button id="toggleTooltipsBtn" class="button">Toon labels</button>
+        <button id="back-to-step-2" class="button">Terug naar stap 2</button>
+        <button id="analyzeBtn" class="button">Analyse door ChatGPT</button>
+        <div id="apiOverlay" class="overlay" style="display:none;">
+          <div class="overlay-content">
+            <button id="closeOverlay" class="close-btn">✕</button>
+            <div id="overlayText"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </section>
+</div>
+
+<!-- ========= JAVASCRIPT ========= -->
+<script>
+  // 0) Universal mouse-offset plugin
+    const SHIFT_X = -25;   // ← adjust horizontal shift (positive moves hit tests right)
+    const SHIFT_Y =   0;   // ← adjust vertical shift (if needed)
+    const mouseOffsetPlugin = {
+      id: 'mouseOffset',
+      beforeEvent(chart, args) {
+        const e = args.event;
+        // shift the Chart.js coords…
+        e.x += SHIFT_X;
+        e.y += SHIFT_Y;
+        // …and also the native offsets used by getRelativePosition if present
+        if (e.native) {
+          e.native.offsetX += SHIFT_X;
+          e.native.offsetY += SHIFT_Y;
+        }
+      }
+    };
+    // register it before everything else
+    Chart.register(mouseOffsetPlugin);
+
+  /********************************************************************
+   * 1. Global variables & helpers                                   *
+   *******************************************************************/
+  let currentStep = 0;
+  function showStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.toggle('active',s.id===`step-${n}`))}
+
+  // Colours taken from HO (for gradients / legend) ---------------
+  const kleuren = {
+  hbo: {
+    Ad: {
+      bg:     'rgba(180, 240, 180, 0.7)',  // light pastel green
+      border: 'rgba(180, 240, 180, 1)'
+    },
+    Bachelor: {
+      bg:     'rgba(220, 100, 100, 0.7)',  // medium warm red (unchanged)
+      border: 'rgba(220, 100, 100, 1)'
+    },
+    Master: {
+      bg:     'rgba(120, 20, 20, 0.7)',    // darker deep red
+      border: 'rgba(120, 20, 20, 1)'
+    }
+  },
+  wo: {
+    Bachelor: {
+      bg:     'rgba(120, 160, 220, 0.7)',  // soft cornflower blue
+      border: 'rgba(120, 160, 220, 1)'
+    },
+    Master: {
+      bg:     'rgba(20,   60, 140, 0.7)',  // deeper royal blue
+      border: 'rgba(20,   60, 140, 1)'
+    }
+  }
+};
+
+
+
+  // State ----------------------------------------------------------------
+  let bubbleChart,geselecteerdeCategorieën=new Set();
+  let uitschietersGefilterd=false,uitschietersGecapt=false;
+  let tooltipsAltijdAan=false;
+
+  // DOM query shortcuts ---------------------------------------------------
+  const qs=s=>document.querySelector(s);
+  const qsa=s=>[...document.querySelectorAll(s)];
+
+  /********************************************************************
+   * 2. Step navigation                                               *
+   *******************************************************************/
+  /* ---------- Dataset-switch ---------- */
+  const datasetToggle = document.getElementById('datasetToggle');
+  
+  datasetToggle.addEventListener('change', () => {
+    const bestand = datasetToggle.checked
+        ? 'Indeling_nidap_data.json'   // NIDAP = rechts
+        : 'Isced_data.json';           // ISCED = links
+  
+    // 1) reset alle filters
+    document
+      .querySelectorAll('.niveauFilter, .typeFilter')
+      .forEach(cb => { cb.checked = false; cb.dispatchEvent(new Event('change')); });
+  
+    // 2) wis categorie-selectie
+    document.querySelectorAll('#categorieGrid input[type="checkbox"]')
+      .forEach(cb => cb.checked = false);
+    geselecteerdeCategorieën.clear();
+    document.querySelectorAll('.niveauFilter, .typeFilter')
+      .forEach(cb => cb.checked = false);
+      
+    // 4) laad het gekozen bestand en herbouw stap 1
+    laadDataset(bestand);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    showStep(0);
+    laadDataset('Isced_data.json');
+
+    const btnFilter = document.querySelector('#btn-filter-outliers');
+    const btnCap    = document.querySelector('#btn-cap-outliers');
+    const chkFilter = btnFilter.querySelector('input[type="checkbox"]');
+    const chkCap    = btnCap.querySelector('input[type="checkbox"]');
+
+    function syncButtons() {
+      chkFilter.checked = uitschietersGefilterd;
+      chkCap.checked    = uitschietersGecapt;
+    }
+
+    btnFilter.addEventListener('click', () => {
+      uitschietersGefilterd = !uitschietersGefilterd;
+      if (uitschietersGefilterd) uitschietersGecapt = false;
+      syncButtons();
+      updateFilters();
+    });
+
+    btnCap.addEventListener('click', () => {
+      uitschietersGecapt = !uitschietersGecapt;
+      if (uitschietersGecapt) uitschietersGefilterd = false;
+      syncButtons();
+      updateFilters();
+    });
+
+    syncButtons();
+  });
+
+  qs('#start_analyse').addEventListener('click',()=>{currentStep=1;showStep(1)});
+  qs('#to-step-2').addEventListener('click',()=>{currentStep=2;showStep(2)});
+  qs('#zoek-opleiding').addEventListener('click',()=>{currentStep=1.1;showStep(1.1)});
+  qs('#opleiding-opgezocht').addEventListener('click',()=>{currentStep=1;showStep(1)});
+  qs('#to-step-1').addEventListener('click',()=>{currentStep=1;showStep(1)});
+  qs('#to-step-3').addEventListener('click',()=>{updateFilters();currentStep=3;showStep(3)});
+  qs('#back-to-start').addEventListener('click',()=>{currentStep=1;showStep(1)});
+  qs('#back-to-step-2').addEventListener('click',()=>{currentStep=2;showStep(2)});
+
+  /********************************************************************
+   * 3. Category dropdown (Step 1)                                    *
+   *******************************************************************/
+  function updateCategorieFilter(cats) {
+    /* --- raster leegmaken & interne set resetten --- */
+    const grid = document.getElementById('categorieGrid');
+    grid.innerHTML = '';
+    geselecteerdeCategorieën.clear();
+
+    /* --- nieuwe labels + checkboxen in het grid --- */
+    cats.forEach(cat => {
+    const id = `cat-${cat.replace(/\s+/g, '-')}`;
+
+    grid.insertAdjacentHTML(
+        'beforeend',
+        `<label>
+            <input type="checkbox" class="categorieFilter" value="${cat}" id="${id}">
+            ${cat}
+        </label>`
+    );
+
+    /* toggle → Set bijwerken → filters verversen */
+    document.getElementById(id).addEventListener('change', e => {
+        e.target.checked
+        ? geselecteerdeCategorieën.add(cat)
+        : geselecteerdeCategorieën.delete(cat);
+        updateFilters();
+    });
+    });
+    }
+
+    function toggleAllCategories(select = true) {
+      const gridCbs = document.querySelectorAll('#categorieGrid input[type="checkbox"]');
+      if (!select) {
+        geselecteerdeCategorieën.clear();
+      }
+      gridCbs.forEach(cb => {
+        cb.checked = select;
+        cb.dispatchEvent(new Event('change'));  // this updates the set each time
+      });
+      // Force a final refresh
+      updateFilters();
+
+      // Optional: if select===false, you might want to reset niveau/type filters:
+      // if (!select) {
+      //   document.querySelectorAll('.niveauFilter, .typeFilter').forEach(cb => {
+      //     cb.checked = false;
+      //   });
+      // }
+    }
+
+
+    document.getElementById('menuSelectAll')
+            .addEventListener('click', () => toggleAllCategories(true));
+
+    document.getElementById('menuClearAll')
+            .addEventListener('click', () => toggleAllCategories(false));
+
+  // Checkboxes (main) -------------------------------------------------
+  qsa('.niveauFilter,.typeFilter').forEach(cb=>cb.addEventListener('change',updateFilters));
+  // qs('#filterOutliersCheckbox').addEventListener('change', () => {
+  //   uitschietersGefilterd = qs('#filterOutliersCheckbox').checked;
+  //   uitschietersGecapt=false;
+  //   qs('#capOutliersCheckbox').checked=false
+  // });
+  // qs('#capOutliersCheckbox').addEventListener('change', () => {
+  //   uitschietersGecapt=qs('#capOutliersCheckbox').checked;
+  //   uitschietersGefilterd=false;
+  //   qs('#filterOutliersCheckbox').checked=false});
+
+  /********************************************************************
+ *  Zoekfunctie (Stap 1.1)
+ *******************************************************************/
+  // Toggle synchroniseren tussen step 1 en step 1.1
+  const toggleZoek  = document.getElementById('zoekToggle');    // stap 1.1
+
+  // als je in sectie 1.1 de toggle verandert → hoofd-toggle ook aanpassen + hoofdlogica uitvoeren
+  toggleZoek.addEventListener('change', () => {
+    datasetToggle.checked = toggleZoek.checked;
+    datasetToggle.dispatchEvent(new Event('change'));
+  });
+
+  // als je in sectie 1 de toggle verandert → zoek-toggle ook mee laten bewegen
+  datasetToggle.addEventListener('change', () => {
+    toggleZoek.checked = datasetToggle.checked;
+  });
+
+  // Init: zorg dat beide gelijk staan bij laden
+  toggleZoek.checked = datasetToggle.checked;
+
+  let opleidingenLijst = [];
+
+  // CSV inlezen
+  fetch('IndelingOpleidingen.csv')
+    .then(r => r.text())
+    .then(txt => {
+
+      const rows = txt.split(/\r?\n/).map(r => r.split(';'));
+      const headers = rows[0].map(h => h.trim());
+
+      const iNaam = headers.indexOf('Opleidingsnaam');
+      const iNidap = headers.indexOf('Hoofdcategorie - NIDAP');
+      const iIsced = headers.indexOf('ISCED-hoofdgroep');
+
+      opleidingenLijst = rows.slice(1)
+        .filter(r => r[iNaam] && r[iNidap] && r[iIsced])
+        .map(r => ({
+          naam: r[iNaam].trim(),
+          nidap: r[iNidap].trim(),
+          isced: r[iIsced].trim()
+        }));
+
+
+      // vul dropdown
+      const $select = $('#opleidingSelectie');
+      $select.empty().append('<option></option>');
+      opleidingenLijst
+        .sort((a,b) => a.naam.localeCompare(b.naam,'nl',{sensitivity:'base'}))
+        .forEach(o => {
+          $select.append(`<option value="${o.naam}">${o.naam}</option>`);
+        });
+
+      $select.select2({
+        placeholder: "Zoek opleiding...",
+        allowClear: true,
+        width: '100%'
+      });
+    })
+    .catch(err => console.error("CSV load error:", err));
+
+
+  // event bij selectie
+  $('#opleidingSelectie').on('change', function() {
+    const naam = $(this).val();
+    const resultDiv = $('#categorieLink');
+    if (!naam) {
+      $('#categorieResultaat').hide();
+      resultDiv.empty();
+      return;
+    }
+
+    const entry = opleidingenLijst.find(o => o.naam === naam);
+    if (!entry) return;
+
+    const gebruikNidap = document.getElementById('datasetToggle').checked;
+    const cat = gebruikNidap ? entry.nidap : entry.isced;
+
+    // toon checkbox zoals in categorieGrid
+    $('#categorieResultaat').show();
+    resultDiv.html(`
+      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;">
+        <input type="checkbox" id="zoekCategorieCheckbox" value="${cat}">
+        ${cat}
+      </label>
+    `);
+
+    const checkbox = document.getElementById('zoekCategorieCheckbox');
+
+    // sync status met de echte checkbox in step 1
+    const catInput = [...document.querySelectorAll('#categorieGrid input')]
+                      .find(x => x.value === cat);
+    if (catInput) {
+      checkbox.checked = catInput.checked;
+    }
+
+    checkbox.addEventListener('change', () => {
+      if (catInput) {
+        catInput.checked = checkbox.checked;
+        catInput.dispatchEvent(new Event('change'));
+      }
+    });
+  });
+
+
+
+  /********************************************************************
+   * 5. Chart.js plugins & options (styling from original HO)          *
+   *******************************************************************/
+  // Zero line plugin -------------------------------------------------
+  const zeroLinePlugin={id:'alwaysZeroLine',beforeDraw(chart){const y=chart.scales.y.getPixelForValue(0);if(y<chart.chartArea.top&&y>chart.chartArea.bottom){const c=chart.ctx;c.save();c.lineWidth=3;c.strokeStyle='rgba(0,0,0,0.5)';c.beginPath();c.moveTo(chart.chartArea.left,y);c.lineTo(chart.chartArea.right,y);c.stroke();c.restore();}}};
+  Chart.register(zeroLinePlugin);
+
+  // put this somewhere global
+  const alwaysLabelFormatter = raw => [
+    `Categorie: ${raw.label}`,
+  ];
+
+  // Custom bubble draw (gradient fills) -----------------------------
+  const customBubbles = {
+  id: 'customBubbles',
+  beforeDatasetsDraw(chart) {
+    // only draw bubbles in Step 3
+    if (currentStep !== 3) {
+      return;
+    }
+
+    const ctx = chart.ctx;
+    chart.data.datasets.forEach((ds, di) => {
+      if (!chart.isDatasetVisible(di)) return;
+
+      // get color by niveau/type
+      const [niv, typ] = ds.label.split(' – ');
+      const kleur = kleuren[niv.toLowerCase()]?.[typ];
+
+      ds.data.forEach((pt, i) => {
+        const meta = chart.getDatasetMeta(di).data[i];
+        if (!meta) return;
+
+        const { x, y } = meta;
+        const r = pt.r;
+
+        // guard against any NaN/Infinity
+        if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(r)) {
+          return;
+        }
+
+        // your gradient-filled bubble
+        const grad = ctx.createRadialGradient(
+          x - r / 3, y - r / 3, r / 4,
+          x,        y,        r
+        );
+        grad.addColorStop(0, 'white');
+        grad.addColorStop(1, kleur?.bg || 'gray');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+    });
+  }
+};
+Chart.register(customBubbles);
+
+
+  // Tooltip overlay for always‑visible labels -----------------------
+  const tooltipOverlay = {
+    id:'tooltipOverlay',
+    afterDraw (chart) {
+      if (!tooltipsAltijdAan) return;
+      
+      const ctx=chart.ctx;
+      chart.data.datasets.forEach( (ds,di) => {
+        if(!chart.isDatasetVisible(di))return;
+        ds.data.forEach( (pt,i) => {
+          const meta=chart.getDatasetMeta(di).data[i];
+          if(!meta)return;
+          const {x,y}=meta;
+          const xOrig=pt.xOrig??pt.x;
+          const yOrig=pt.yOrig??pt.y;;
+          const fontSize=12,pad=4,lineH=fontSize+2;
+          const boxW=Math.max(...lines.map(l=>ctx.measureText(l).width))+2*pad;
+          const boxH=lines.length*lineH+2*pad;
+          ctx.save();
+          ctx.fillStyle='#184731';
+          ctx.strokeStyle='#fff';
+          ctx.lineWidth=1;ctx.font=`${fontSize}px var(--font)`;
+          ctx.textBaseline='top';
+          ctx.fillRect(x+10,y-10,boxW,boxH);
+          ctx.strokeRect(x+10,y-10,boxW,boxH);
+          ctx.fillStyle='#fff';
+          lines.forEach( (ln,idx) => ctx.fillText(ln,x+10+pad,y-10+pad+idx*lineH));
+          ctx.restore();
+        });
+      });
+    }};
+
+  // Zoom buttons overlay (drawn) ------------------------------------
+  const zoomButtonsOverlay = {
+    id: 'zoomButtonsOverlay',
+
+    // 1) Make sure we always have an array to store our buttons
+    beforeInit(chart) {
+      chart.$zoomButtons = [];
+    },
+
+    // 2) Draw them after the datasets (so axes & bubbles stay underneath)
+    afterDatasetsDraw(chart) {
+      const ctx = chart.ctx;
+      const buttons = [
+        { l: '+', a: () => chart.zoom(1.2) },
+        { l: '–', a: () => chart.zoom(0.8) },
+        { l: '↺', a: () => chart.resetZoom() }
+      ];
+
+      const size   = 26;
+      const pad    = 8;
+      const totalW = buttons.length * size + (buttons.length - 1) * pad;
+      const baseX  = (chart.width - totalW) / 2;
+      const baseY  = 0;
+
+      ctx.save();
+      chart.$zoomButtons = buttons.map((btn, i) => {
+        const x = baseX + i * (size + pad);
+        const y = baseY;
+
+        // draw background + border
+        ctx.fillStyle   = '#184731';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        ctx.roundRect(x, y, size, size, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // draw label
+        ctx.fillStyle     = '#fff';
+        ctx.font          = 'bold 16px var(--font)';
+        ctx.textAlign     = 'center';
+        ctx.textBaseline  = 'middle';
+        ctx.fillText(btn.l, x + size/2, y + size/2);
+
+        return { x, y, size, action: btn.a };
+      });
+      ctx.restore();
+    },
+
+    // 3) On each event, if it's a click inside a stored button, run its action
+    beforeEvent(chart, args) {
+      const e = args.event;
+      if (e.type !== 'click') return;
+
+      const { x, y } = e;
+      chart.$zoomButtons.forEach(btn => {
+        if (
+          x >= btn.x &&
+          x <= btn.x + btn.size &&
+          y >= btn.y &&
+          y <= btn.y + btn.size
+        ) {
+          btn.action();
+        }
+      });
+    }
+  };
+
+
+  /********************************************************************
+   * 6. Chart options (legend, scales, plugins)                       *
+   *******************************************************************/
+  const volgorde=['HBO – Ad','HBO – Bachelor','HBO – Master','WO – Bachelor','WO – Master'];
+
+  let maxPct = 0;
+
+  // Vergeet niet bovenaan te importeren:
+  // 1) smarter custom plugin: try [top, bottom, left, right] and skip colliding
+const smartTooltipPlugin = {
+  id: 'smartTooltipPlugin',
+  afterDatasetsDraw(chart, args, opts) {
+    if (!opts.show) return;
+
+    const originalTooltipOpts = chart.config._config.options.plugins.tooltip;
+    const { ctx, chartArea } = chart;
+    const tCfg = chart.options.plugins.tooltip;
+    const pad = 6;
+    const lineH = tCfg.bodyFont.size * 1.2;
+    const tailLengths = opts.tailLengths || [20, 40, 60, 80, 100];
+    const anglesDeg = opts.anglesDeg || Array.from({ length: 24 }, (_, i) => i * 15); // 0–345° every 15°
+
+    function measure(lines) {
+      ctx.font = `${tCfg.bodyFont.size}px ${tCfg.bodyFont.family}`;
+      let w = 0;
+      for (const l of lines) w = Math.max(w, ctx.measureText(l).width);
+      const h = lines.length * lineH;
+      return { w: w + pad * 2, h: h + pad * 2 };
+    }
+    function clampX(x, w) {
+      return Math.min(Math.max(x, chartArea.left), chartArea.right - w);
+    }
+    function clampY(y, h) {
+      return Math.min(Math.max(y, chartArea.top), chartArea.bottom - h);
+    }
+    function collides(b1, b2) {
+      return !(b1.x + b1.w <= b2.x ||
+               b1.x >= b2.x + b2.w ||
+               b1.y + b1.h <= b2.y ||
+               b1.y >= b2.y + b2.h);
+    }
+
+    // Gather points and bubbles
+    const pts = [];
+    const bubbleBoxes = [];
+    chart.data.datasets.forEach((ds, di) => {
+      if (!chart.isDatasetVisible(di)) return;
+      const meta = chart.getDatasetMeta(di);
+      ds.data.forEach((dp, i) => {
+        const el = meta.data[i];
+        const { x, y } = el.getProps(['x', 'y'], true);
+        // const lines = tCfg.callbacks.label({ chart, datasetIndex: di, dataIndex: i, raw: dp });
+        // const lines = [pt.label];
+        const lines = alwaysLabelFormatter(dp);
+        if (lines?.length) {
+          const { w, h } = measure(lines);
+          pts.push({ x, y, lines, w, h, raw: dp, datasetIndex: di, dataIndex: i });
+        }
+        const r = el.options?.radius ?? el.height / 2 ?? 10;
+        bubbleBoxes.push({ x: x - r, y: y - r, w: r * 2, h: r * 2 });
+      });
+    });
+    if (!pts.length) return;
+
+    // Sort largest labels first
+    pts.sort((a, b) => (b.w * b.h) - (a.w * a.h));
+
+    function getBG(pt) {
+      if (typeof originalTooltipOpts.backgroundColor === 'function') {
+        const fakeTooltip = {
+          dataPoints: [{
+            dataset: chart.data.datasets[pt.datasetIndex],
+            datasetIndex: pt.datasetIndex,
+            dataIndex: pt.dataIndex,
+            raw: pt.raw
+          }]
+        };
+        return originalTooltipOpts.backgroundColor({ chart, tooltip: fakeTooltip });
+      }
+      return originalTooltipOpts.backgroundColor;
+    }
+    function getTextColor(pt) {
+      if (typeof originalTooltipOpts.callbacks?.labelTextColor === 'function') {
+        const fakeCtx = {
+          chart,
+          raw: pt.raw,
+          datasetIndex: pt.datasetIndex,
+          dataIndex: pt.dataIndex
+        };
+        return originalTooltipOpts.callbacks.labelTextColor(fakeCtx);
+      }
+      return '#000';
+    }
+
+    const placed = [];
+
+    for (const pt of pts) {
+      let best = null;
+
+      for (const ang of anglesDeg) {
+        const angRad = ang * Math.PI / 180;
+        for (const tail of tailLengths) {
+          let bx = pt.x + Math.cos(angRad) * tail - pt.w / 2;
+          let by = pt.y - pt.h / 2 - Math.sin(angRad) * tail;
+          bx = clampX(bx, pt.w);
+          by = clampY(by, pt.h);
+
+          const candidate = { x: bx, y: by, w: pt.w, h: pt.h };
+
+          // Collisions
+          let collisionPenalty = 0;
+          for (const bubble of bubbleBoxes) {
+            if (collides(candidate, bubble)) collisionPenalty += 1e6;
+          }
+          for (const other of placed) {
+            if (collides(candidate, other)) collisionPenalty += 5e5;
+          }
+
+          // Distance from own bubble
+          const dx = (bx + pt.w / 2) - pt.x;
+          const dy = (by + pt.h / 2) - pt.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Crowding penalty: inverse of nearest label distance
+          let minDist = Infinity;
+          for (const other of placed) {
+            const odx = (other.x + other.w / 2) - (bx + pt.w / 2);
+            const ody = (other.y + other.h / 2) - (by + pt.h / 2);
+            minDist = Math.min(minDist, Math.sqrt(odx * odx + ody * ody));
+          }
+          const crowdingPenalty = minDist < Infinity ? (200 - minDist) * 50 : 0;
+
+          // Empty space penalty: further from chart center → small penalty
+          const cx = (chartArea.left + chartArea.right) / 2;
+          const cy = (chartArea.top + chartArea.bottom) / 2;
+          const distFromCenter = Math.sqrt(Math.pow((bx + pt.w / 2) - cx, 2) + Math.pow((by + pt.h / 2) - cy, 2));
+          const emptySpacePenalty = distFromCenter * 5;
+
+          // Score
+          const score = collisionPenalty + crowdingPenalty + emptySpacePenalty + dist * 10;
+
+          if (!best || score < best.score) {
+            best = { box: candidate, score };
+          }
+        }
+      }
+
+      // Fallback above bubble
+      if (!best) {
+        const bx = clampX(pt.x - pt.w / 2, pt.w);
+        const by = clampY(pt.y - pt.h - 10, pt.h);
+        best = { box: { x: bx, y: by, w: pt.w, h: pt.h }, score: Infinity };
+      }
+
+      const bg = getBG(pt);
+      const textColor = getTextColor(pt);
+
+      const bx = best.box.x;
+      const by = best.box.y;
+      const bw = pt.w;
+      const bh = pt.h;
+      const boxCenterX = bx + bw / 2;
+      const boxCenterY = by + bh / 2;
+      const angle = Math.atan2(pt.y - boxCenterY, pt.x - boxCenterX);
+      const tipX = boxCenterX + Math.cos(angle) * (bw / 2);
+      const tipY = boxCenterY + Math.sin(angle) * (bh / 2);
+      const side1X = tipX + Math.cos(angle + Math.PI / 2) * 5;
+      const side1Y = tipY + Math.sin(angle + Math.PI / 2) * 5;
+      const side2X = tipX + Math.cos(angle - Math.PI / 2) * 5;
+      const side2Y = tipY + Math.sin(angle - Math.PI / 2) * 5;
+
+      // Draw triangle + box in one path
+      ctx.save();
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      // Triangle
+      ctx.moveTo(pt.x, pt.y);
+      ctx.lineTo(side1X, side1Y);
+      ctx.lineTo(side2X, side2Y);
+      ctx.closePath();
+      // Box
+      ctx.moveTo(bx + 4, by);
+      ctx.lineTo(bx + bw - 4, by);
+      ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + 4);
+      ctx.lineTo(bx + bw, by + bh - 4);
+      ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - 4, by + bh);
+      ctx.lineTo(bx + 4, by + bh);
+      ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - 4);
+      ctx.lineTo(bx, by + 4);
+      ctx.quadraticCurveTo(bx, by, bx + 4, by);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Text
+      ctx.save();
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      let ty = by + pad;
+      for (const line of pt.lines) {
+        ctx.fillText(line, bx + bw / 2, ty);
+        ty += lineH;
+      }
+      ctx.restore();
+
+      placed.push(best.box);
+    }
+  }
+};
+ Chart.register(smartTooltipPlugin);
+
+
+  const chartOpties = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 5 / 3,
+    layout: { padding: 30 },
+    plugins: {
+      smartTooltipPlugin: { show: true },
+      tooltip: {
+        enabled: !tooltipsAltijdAan,
+        displayColors: false,
+        // backgroundColor: '#184731',
+        // guard against missing tooltip.dataPoints
+        backgroundColor(ctx) {
+          const dps = ctx.tooltip?.dataPoints;
+          if (!dps || !dps.length) {
+            // when your label-plugin runs, there is no tooltip → fall back
+            return 'rgba(0,0,0,0.7)';
+          }
+          const dp = dps[0];
+          const d  = dp.raw;
+          return kleuren[d.niveau.toLowerCase()][d.opleidingType].bg;
+        },
+        titleFont: { size: 14, weight: '300', family: 'Inter' },
+        bodyFont:  { size: 13, family: 'Inter' },
+        callbacks: {
+          label: ctx => {
+            const d = ctx.raw;
+            const x = d.xOrig ?? d.x;
+            const y = d.yOrig ?? d.y;
+            return [
+              `Categorie: ${d.label}`,
+              `Niveau: ${d.niveau} ${d.opleidingType}`,
+              // `${x} opleidingen`,
+              `${d.instroom} studenten`,
+              `${y > 0 ? '+' : ''}${y}% trend`
+            ];
+          },
+          labelColor:    () => ({ borderColor:'transparent', backgroundColor:'transparent' }),
+          labelTextColor(ctx) {
+            const d = ctx.raw;
+            // guard: if this raw isn’t one of your data points, just use black
+            if (!d || typeof d.niveau !== 'string') {
+              return '#fff';
+            }
+            // original logic
+            const bg = kleuren[d.niveau.toLowerCase()][d.opleidingType].bg;
+            const m  = bg.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
+            if (!m) return '#000';
+            const [r,g,b] = m.slice(1,4).map(Number);
+            const lum = 0.299*r + 0.587*g + 0.114*b;
+            return lum > 186 ? '#000' : '#fff';
+          }
+
+        }
+      },
+      alwaysLabels: {
+        formatter(dp) {
+          return [dp.label, `${dp.instroom} studenten`]; // whatever you want
+        }
+      },
+      legend: {
+        position: 'right',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 16,
+          font: { size: 13, family: 'Inter' },
+          boxWidth: 18,
+          boxHeight: 18,
+          color: '#000',
+          generateLabels(chart) {
+            const raw = chart.data.datasets
+              .map((ds, i) => {
+                if (!ds.data.length) return null;
+                const [niv, typ] = ds.label.split(' – ');
+                const kleur = kleuren[niv.toLowerCase()]?.[typ];
+                const grad = chart.ctx.createRadialGradient(0,0,0,0,0,10);
+                grad.addColorStop(0, 'white');
+                grad.addColorStop(1, kleur?.bg || 'gray');
+                return {
+                  text: ds.label,
+                  fillStyle: grad,
+                  strokeStyle: kleur?.border || 'gray',
+                  lineWidth: 1,
+                  hidden: !chart.isDatasetVisible(i),
+                  index: i,
+                  fontColor: 'black'
+                };
+              })
+              .filter(Boolean);
+            return volgorde
+              .map(l => raw.find(it => it.text === l))
+              .filter(Boolean);
+          }
+        }
+      },
+      zoom: {
+        pan:  { enabled:true, mode:'xy', drag:true },
+        zoom: {
+          wheel:{enabled:false},
+          pinch:{enabled:false},
+          mode:'xy',
+          drag:true,
+          onZoomComplete({ chart }) {
+            const yScale = chart.scales.y;
+            // Rond onder- en bovengrens
+            yScale.options.min = Math.floor(yScale.min);
+            yScale.options.max = Math.ceil(yScale.max);
+            // Herteken zonder extra animatie
+            chart.update('none');
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Aantal opleidingen',
+          font: { size: 18, weight: '600', family: 'Inter' },
+          color: '#000'
+        },
+        beginAtZero: true,
+        grid: {
+          color:     ctx => (ctx.tick && ctx.tick.value === 0) ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)',
+          lineWidth: ctx => (ctx.tick && ctx.tick.value === 0) ? 2 : 1
+        },
+        ticks: {
+          font:{size:16,family:'Inter'},
+          color:'#000',
+        callback: v => Math.round(v)
+      },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Trend 2018 – 2024',
+          font: { size: 18, weight: '600', family: 'Inter' },
+          color: '#000'
+        },
+        beginAtZero: true,
+        min: -100,
+        max: 100,
+        grid: {
+          color:     ctx => (ctx.tick && ctx.tick.value === 0) ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)',
+          lineWidth: ctx => (ctx.tick && ctx.tick.value === 0) ? 2 : 1
+        },
+        ticks: {
+          callback: v => `${v > 0 ? '+' : ''}${Math.round(v)}%`,
+          font:     { size:16, family:'Inter' },
+          color:    ctx => {
+            const t = (Math.max(-100, Math.min(100, ctx.tick.value)) + 100) / 200;
+            return `hsl(${t*120},100%,40%)`;
+          },
+          // stepSize: 5,
+        }
+      }
+    }
+  };
+
+  /********************************************************************
+   * 7. Dataset helpers                                               *
+   *******************************************************************/
+  function maakDataset(data,niveau,type,max) {const rec=data.filter(d=>d.Niveau===niveau&&d["Type opleiding"]===type);if(!rec.length)return null;return{label:`${niveau.toUpperCase()} – ${type}`,data:rec.map(d=>{const inst=d["Instroom 2023 - 2024"],trend=Math.round(d["Trend 2018 - 2024"]*100),r=10+(inst/max)*30;return{x:d["Aantal opleidingen"],y:trend,r,label:d.Indeling,instroom:inst,niveau,opleidingType: type,hitRadius:r*1.1,hoverRadius:r*1.1}}),backgroundColor:()=>"rgba(0,0,0,0.01)",borderColor:'rgba(0,0,0,0)',borderWidth:0}};
+
+  /********************************************************************
+   * 8. Load dataset & build chart                                    *
+   *******************************************************************/
+  // assume 'datasets' is the array you pass into your Chart config,
+  // and each point is an object { x:…, y:… } with y in percent.
+
+  function laadDataset(pad) {
+    fetch(pad)
+      .then(r => r.json())
+      .then(data => {
+        // 1) Build the raw datasets
+        const maxInst = Math.max(...data.map(d => d["Instroom 2023 - 2024"]));
+        const cats = [...new Set(data.map(d => d.Indeling))].sort();
+        updateCategorieFilter(cats);
+
+        const datasets = ['Ad', 'Bachelor', 'Master']
+          .flatMap(type => [
+            maakDataset(data, 'hbo', type, maxInst),
+            maakDataset(data, 'wo',  type, maxInst)
+          ])
+          .filter(Boolean);
+
+        datasets.forEach(ds => ds._origineel = [...ds.data]);
+
+        // 2) Get the drawing context
+        const ctx = document.getElementById('bubbleChart').getContext('2d');
+
+        // 3) Recompute y-axis limits using the same hide/cap logic as updateFilters()
+        const ys = datasets
+          .flatMap(ds => ds._origineel)                                  // use original points
+          .filter(pt =>
+            !uitschietersGefilterd                                     // if not hiding outliers
+            || (Math.abs(pt.y) <= 200 && pt.x <= 150)                  // or pt within bounds
+          )
+          .map(pt =>
+            uitschietersGecapt                                         // if capping outliers
+              ? Math.max(Math.min(pt.y, 200), -100)                    // clamp y to ±100
+              : pt.y
+          );
+
+        const absYs = ys.map(y => Math.abs(y));
+        const maxPct = absYs.length ? Math.ceil(Math.max(...absYs)) : 0;
+
+
+        // 4) Inject into your pre-declared chartOpties
+        chartOpties.scales.y.min = -maxPct;
+        chartOpties.scales.y.max =  maxPct;
+
+        // 5) Destroy & recreate the chart
+        if (bubbleChart) bubbleChart.destroy();
+        bubbleChart = new Chart(ctx, {
+          type: 'bubble',
+          data: { datasets },
+          options: chartOpties,
+          plugins: [customBubbles, tooltipOverlay, smartTooltipPlugin, zoomButtonsOverlay]
+        });
+        
+        // 6) Finally re-apply point-level hiding/capping
+        updateFilters();
+      })
+      .catch(err => console.error('Dataset load failed:', err));
+  }
+
+
+  /********************************************************************
+   * 9. Filtering logic                                              *
+   *******************************************************************/
+  function updateFilters() {
+    if (!bubbleChart) return;
+
+    // ▶ Log the current wizard step
+   if (!bubbleChart) return;
+
+    // — 1. Read active filters —  
+    let categorieën = new Set(
+      qsa('.categorieFilter:checked').map(cb => cb.value)
+    );
+
+    // Niveau filters (do NOT default to all)
+    let niveaus = new Set(
+      qsa('.niveauFilter:checked').map(cb => cb.value.toLowerCase())
+    );
+
+    // Opleidingstype filters (do NOT default to all)
+    let types = new Set(
+      qsa('.typeFilter:checked').map(cb => cb.value)
+    );
+
+    // — If user unchecked *all* niveaux OR *all* types → show no data and bail out
+    if (niveaus.size === 0 || types.size === 0) {
+      bubbleChart.data.datasets.forEach((ds, i) => {
+        ds.data = [];
+        bubbleChart.setDatasetVisibility(i, false);
+      });
+      bubbleChart.update();
+      return;
+    }
+
+    // — 2. Recompute y-axis bounds based on filtered & capped points —  
+    const ys = bubbleChart.data.datasets
+    .filter(ds => {
+      const [nivLabel, typeLabel] = ds.label.split(' – ');
+      return niveaus.has(nivLabel.toLowerCase()) && types.has(typeLabel);
+    })
+    .flatMap(ds => ds._origineel)
+    .filter(pt =>
+      categorieën.has(pt.label) &&
+      (!uitschietersGefilterd || (Math.abs(pt.y) <= 200 && pt.x <= 150))
+    )
+    .map(pt =>
+      uitschietersGecapt
+        ? Math.max(Math.min(pt.y, 200), -100)
+        : pt.y
+    );
+
+
+    const maxY = ys.length
+      ? Math.ceil(Math.max(...ys.map(Math.abs)))
+      : 0;
+
+
+    bubbleChart.options.scales.y.min = -maxY;
+    bubbleChart.options.scales.y.max =  maxY;
+
+    // — 3. Rebuild each dataset & toggle visibility —  
+    bubbleChart.data.datasets.forEach((ds, i) => {
+      const [nivLabel, typeLabel] = ds.label.split(' – ');
+      const nivo = nivLabel.toLowerCase();
+      const type = typeLabel;
+
+      const visible =
+        categorieën.has([...categorieën][0]) && // always true now that categories default to all
+        niveaus.has(nivo) &&
+        types.has(type);
+
+      if (visible) {
+        ds.data = ds._origineel
+          .filter(pt =>
+            categorieën.has(pt.label) &&
+            (!uitschietersGefilterd || (Math.abs(pt.y) <= 200 && pt.x <= 150))
+          )
+          .map(pt => {
+            const clone = { ...pt };
+            if (uitschietersGecapt) {
+              clone.xOrig = pt.x;
+              clone.yOrig = pt.y;
+              clone.x     = pt.x // Math.min(pt.x, 150);
+              clone.y     = Math.max(Math.min(pt.y, 200), -100);
+            }
+            return clone;
+          });
+        bubbleChart.setDatasetVisibility(i, true);
+      } else {
+        ds.data = [];
+        bubbleChart.setDatasetVisibility(i, false);
+      }
+    });
+
+    // — 4. Restore tooltip & legend, then redraw —  
+    bubbleChart.options.plugins.tooltip.enabled =
+      !tooltipsAltijdAan;
+    bubbleChart.options.plugins.legend.labels.generateLabels =
+      chartOpties.plugins.legend.labels.generateLabels;
+
+    bubbleChart.update();
+
+    
+  }
+
+  /********************************************************************
+   * 10. Chart‑level buttons (labels)                     *
+   *******************************************************************/
+  // Toggle always‑visible labels ------------------------------------
+  const btn = document.getElementById('toggleTooltipsBtn');
+  btn.textContent = 'Verberg labels';
+
+  btn.addEventListener('click', () => {
+    const p = bubbleChart.options.plugins;
+      p.smartTooltipPlugin.show = !p.smartTooltipPlugin.show;
+      btn.textContent = p.smartTooltipPlugin.show
+        ? 'Verberg labels'
+        : 'Toon labels';
+      bubbleChart.update();
+    });
+
+  /********************************************************************
+   * 11. GPT analyse & figuur genereren                    *
+   *******************************************************************/
+
+
+  document.getElementById('analyzeBtn').onclick = async () => {
+    const overlay     = document.getElementById('apiOverlay');
+    const overlayText = document.getElementById('overlayText');
+    const DISCLAIMER  = '<h3 style="color: red;">DISCLAIMER: ChatGPT kan fouten maken. NIDAP draagt geen verantwoordelijkheid voor deze AI-gegenereerde interpretatie.</h3>';
+
+    // 0) spawn overlay + toon spinner
+    overlayText.innerHTML = '<div class="spinner"></div>';
+    overlay.style.display = 'flex';
+
+    // 1) verzamel alle datapoints uit je bubbleChart
+    const allPoints = [];
+    bubbleChart.data.datasets.forEach(ds => {
+      ds.data.forEach(pt => {
+        allPoints.push({
+          opleidingsCategorie: pt.label,
+          aantalOpleidingen:   pt.x,
+          trend2018_2024:      pt.y,
+          instroom2024:        pt.instroom,
+          niveau:              pt.niveau + ' ' + pt.opleidingType,
+        });
+      });
+    });
+
+    // 2) Collect full UI context
+    const datasetIndeling = document.getElementById('datasetToggle').checked ? 'NIDAP' : 'ISCED';
+    const categoriesAll   = [...document.querySelectorAll('.categorieFilter')].map(cb => cb.value);
+    const categoriesSel   = [...document.querySelectorAll('.categorieFilter:checked')].map(cb => cb.value);
+    const niveausAll      = [...document.querySelectorAll('.niveauFilter')].map(cb => cb.value.toUpperCase());
+    const niveausSel      = [...document.querySelectorAll('.niveauFilter:checked')].map(cb => cb.value.toUpperCase());
+    const typesAll        = [...document.querySelectorAll('.typeFilter')].map(cb => cb.value);
+    const typesSel        = [...document.querySelectorAll('.typeFilter:checked')].map(cb => cb.value);
+    const outliers = {
+      hidden: !!uitschietersGefilterd,
+      capped: !!uitschietersGecapt,
+      capRules: uitschietersGecapt ? { xMax: 150, yMin: -100, yMax: 200 } : null
+    };
+    const axes = {
+      x: bubbleChart.options.scales.x,
+      y: {
+        min: bubbleChart.options.scales.y.min,
+        max: bubbleChart.options.scales.y.max
+      }
+    };
+
+    // 3) bouw je prompt
+    const promptLines = [
+      'Je bent een expert op het gebied van de Nederlandse educatiemarkt.',
+      'Analyseer deze dataset en geef een kort, bondig en inzichtelijke samenvatting met een kleine interpretatie.',
+      'Gebruik puntsgewijs waar logisch. Benadruk opvallende clusters/uitbijters en interessante verschillen.',
+      'Geef de output in geldig HTML-formaat, zonder <html> of <body> tags. Gebruik <p> voor alinea’s, <strong> voor vetgedrukte tekst en <ul><li> voor opsommingstekens. Gebruik geen markdown. Zorg dat er weinig witregels in de tekst zitten.',
+      '',
+      'Context van de figuur (UI‑instellingen):',
+      JSON.stringify({
+        indeling: datasetIndeling,
+        categorieën_beschikbaar: categoriesAll,
+        categorieën_geselecteerd: categoriesSel,
+        niveaus_beschikbaar: niveausAll,
+        niveaus_geselecteerd: niveausSel,
+        types_beschikbaar: typesAll,
+        types_geselecteerd: typesSel,
+        outliers,
+        assen: axes
+      }, null, 2),
+      'Data:',
+      JSON.stringify(allPoints, null, 2)
+    ];
+
+    // 4) proxy-call naar je eigen PHP-endpoint
+    try {
+      const res = await fetch('api-proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-5-mini',
+          messages: [
+            { role: 'user', content: promptLines.join('\n') }
+          ]
+        })
+      });
+
+      if (!res.ok) {
+        console.error('API-error', await res.text());
+        overlayText.textContent = 'Er ging iets mis: ' + res.status;
+        return;
+      }
+
+      const data    = await res.json();
+      const content = `${DISCLAIMER}\n\n${data.choices?.[0]?.message?.content}` || 'Geen antwoord ontvangen.';
+
+      // 5) toon het antwoord
+      window.latestAnalysis      = content;
+      overlayText.innerHTML    = content;
+      document.getElementById('closeOverlay').onclick = () => {
+        overlay.style.display = 'none';
+      };
+
+    } catch (e) {
+      console.error('Network error', e);
+      overlayText.innerHTML = 'Netwerkfout: ' + e.message;
+    }
+  };
+
+  // Mail button
+  const mailBtn = document.getElementById('mailNidap');
+
+  mailBtn.addEventListener('click', () => {
+    const subject = encodeURIComponent('Meer informatie betreft instroomcijfers');
+    const body = encodeURIComponent('Beste NIDAP,\nIk heb een vraag over het volgende:\n\n...');
+
+    window.location.href = `mailto:info@nidap.com?subject=${subject}&body=${body}`;
+  });
+
+  // Fullscreen button ----------------------------------------------
+  const exportBtn = document.getElementById('exportChartBtn');
+
+  exportBtn.addEventListener('click', () => {
+    const orig = bubbleChart.canvas;
+
+    // 1) Haal HTML weg uit analysis → platte tekst
+    let analysisHTML = window.latestAnalysis || '';
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = analysisHTML;
+    const analysisPlain = tempDiv.textContent || tempDiv.innerText || '';
+
+    const padding = 20;
+    const fontSize = 18;
+    const lineHeight = fontSize * 1.4;
+    const maxTextWidth = orig.width - padding * 2;
+
+    // wrap-functie
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (const word of words) {
+        const test = line + word + ' ';
+        if (ctx.measureText(test).width > maxWidth && line) {
+          ctx.fillText(line, x, y);
+          line = word + ' ';
+          y += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      ctx.fillText(line, x, y);
+      return y + lineHeight;
+    }
+
+    // bereken hoeveel ruimte tekst nodig heeft
+    const tmpCtx = document.createElement('canvas').getContext('2d');
+    tmpCtx.font = `${fontSize}px sans-serif`;
+    let textY = padding;
+    for (const paragraph of analysisPlain.split('\n')) {
+      textY = wrapText(tmpCtx, paragraph, padding, textY, maxTextWidth, lineHeight);
+    }
+    const textHeight = textY + padding / 2;
+
+    // tijdelijk canvas met extra ruimte
+    const tmp = document.createElement('canvas');
+    tmp.width = orig.width;
+    tmp.height = orig.height + textHeight;
+    const ctx2 = tmp.getContext('2d');
+
+    // 1) witte achtergrond
+    ctx2.fillStyle = '#fff';
+    ctx2.fillRect(0, 0, tmp.width, tmp.height);
+
+    // 2) originele graph
+    ctx2.drawImage(orig, 0, 0);
+
+    // 3) tekst onder de graph
+    ctx2.save();
+    ctx2.font = `${fontSize}px sans-serif`;
+    ctx2.fillStyle = '#000';
+    ctx2.textBaseline = 'top';
+    let y = orig.height + padding / 2;
+    for (const paragraph of analysisPlain.split('\n')) {
+      y = wrapText(ctx2, paragraph, padding, y, maxTextWidth, lineHeight);
+    }
+    ctx2.restore();
+
+    // 4) logo met maxSize 400
+    const logo = new Image();
+    logo.src = 'nidap_logo.png';
+    logo.onload = () => {
+      const maxSize = 400;
+      let w = logo.naturalWidth;
+      let h = logo.naturalHeight;
+      const ratio = Math.min(maxSize / w, maxSize / h);
+      w *= ratio;
+      h *= ratio;
+      const x = tmp.width - w - padding;
+      const yLogo = padding;
+      ctx2.drawImage(logo, x, yLogo, w, h);
+
+      // 5) download
+      tmp.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Nidap_Instroomcijfers_dashboard.png';
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      });
+    };
+  });
+
+</script>
+</body>
+</html>

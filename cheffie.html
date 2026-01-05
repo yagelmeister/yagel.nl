@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yagel.nl – cheffie</title>
+  <meta name="description" content="Koken: zuurdesem, private catering en koken in de daklozenopvang." />
+
+  <link rel="stylesheet" href="styling.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    main.grid.cheffie{
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 900px){
+      main.grid.cheffie{
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px){
+      main.grid.cheffie{
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="topbar" aria-label="Taal kiezen">
+        <button class="lang-btn" type="button" data-lang="nl" aria-pressed="true">nl</button>
+        <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">en</button>
+      </div>
+
+      <div class="name" data-i18n="name">YA'GEL SCHOONDERBEEK</div>
+      <div class="rule"></div>
+    </header>
+
+    <main class="grid cheffie" aria-label="Cooking sections">
+      <!-- Bakery mater -->
+      <a class="card tilt-1" href="bakery.html">
+        <div>
+          <img src="images/koken/bakkerij/pitas.jpg" alt="" class="card-image" />
+          <div class="label" data-i18n="bakery_label">BAKKERIJ MATER</div>
+          <div class="meta" data-i18n="bakery_meta">het leren van de wegen van zuurdesem</div>
+        </div>
+      </a>
+
+      <!-- Private / catering -->
+      <a class="card tilt-2" href="catering.html">
+        <div>
+          <img src="images/koken/catering/worstenbroodjes.jpg" alt="" class="card-image" />
+          <div class="label" data-i18n="catering_label">PRIVATE / CATERING</div>
+          <div class="meta" data-i18n="catering_meta">gerechten en borden gemaakt voor events</div>
+        </div>
+      </a>
+
+      <!-- Homeless shelter -->
+      <a class="card tilt-3" href="daklozen.html">
+        <div>
+          <img src="images/koken/daklozenopvang/soep kloof.jpg" alt="" class="card-image" />
+          <div class="label" data-i18n="shelter_label">DAKLOZENOPVANG DE KLOOF</div>
+          <div class="meta" data-i18n="shelter_meta">elke donderdag een warme lunch voor daklozen</div>
+        </div>
+      </a>
+    </main>
+
+    <footer>
+      <a class="pill" href="home.html" data-i18n="pill_home">HOME</a>
+      <a class="pill" href="#" id="contactLink" data-i18n="pill_contact">CONTACT</a>
+    </footer>
+  </div>
+
+  <script>
+    // theme (zelfde als de rest)
+    (function(){
+      var savedTheme = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", savedTheme || "auto");
+    })();
+
+    // language (nl/en)
+    (function(){
+      var dict = {
+        nl: {
+          name: "YA'GEL SCHOONDERBEEK",
+          bakery_label: "BAKKERIJ MATER",
+          bakery_meta: "het leren van de wegen van zuurdesem",
+          catering_label: "PRIVATE / CATERING",
+          catering_meta: "gerechten en borden gemaakt voor events",
+          shelter_label: "DAKLOZENOPVANG DE KLOOF",
+          shelter_meta: "elke donderdag een warme lunch voor daklozen",
+          pill_home: "HOME",
+          pill_contact: "CONTACT"
+        },
+        en: {
+          name: "YA'GEL SCHOONDERBEEK",
+          bakery_label: "BAKERY MATER",
+          bakery_meta: "learning the ways of sourdough",
+          catering_label: "PRIVATE / CATERING",
+          catering_meta: "plates created for events",
+          shelter_label: "HOMELESS SHELTER DE KLOOF",
+          shelter_meta: "a warm lunch every thursday for homeless",
+          pill_home: "HOME",
+          pill_contact: "CONTACT"
+        }
+      };
+
+      function applyLang(lang){
+        var pack = dict[lang] || dict.nl;
+        document.documentElement.lang = lang;
+
+        document.querySelectorAll("[data-i18n]").forEach(function(el){
+          var key = el.getAttribute("data-i18n");
+          if(pack[key]) el.textContent = pack[key];
+        });
+
+        document.querySelectorAll(".lang-btn").forEach(function(btn){
+          btn.setAttribute(
+            "aria-pressed",
+            btn.getAttribute("data-lang") === lang ? "true" : "false"
+          );
+        });
+
+        localStorage.setItem("lang", lang);
+      }
+
+      var initial = localStorage.getItem("lang") || document.documentElement.lang || "nl";
+      if(!dict[initial]) initial = "nl";
+      applyLang(initial);
+
+      document.querySelectorAll(".lang-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          applyLang(btn.getAttribute("data-lang"));
+        });
+      });
+    })();
+
+    // contact (anti-scrape)
+    (function(){
+      const user = "yagelschoonderbeek";
+      const domain = "gmail.com";
+      const link = document.getElementById("contactLink");
+
+      if(!link) return;
+      link.addEventListener("click", function(e){
+        e.preventDefault();
+        window.location.href = "mailto:" + user + "@" + domain;
+      });
+    })();
+  </script>
+</body>
+</html>

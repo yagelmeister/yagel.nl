@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yagel.nl - radio</title>
+  <meta name="description" content="DJ mixes en radio shows van YAK." />
+
+  <!-- shared styling (your renamed file) -->
+  <link rel="stylesheet" href="styling.css" />
+
+  <!-- fonts (same as home) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* keep everything in the home vibe; only add a mosaic layout + embed sizing */
+
+    main.grid.mosaic{
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-flow: dense;
+      gap: 18px;
+    }
+
+    /* mosaic sizes */
+    .span-2{ grid-column: span 2; }
+    .span-3{ grid-column: span 3; }
+    .span-4{ grid-column: span 4; }
+    .row-1{ grid-row: span 1; }
+    .row-2{ grid-row: span 2; }
+
+    /* embed block inside a card */
+    .embed{
+      margin-top: 12px;
+      border-top: 1px solid var(--softline);
+      padding-top: 12px;
+    }
+    .embed iframe{
+      width: 100%;
+      border: 0;
+      display:block;
+      background: transparent;
+    }
+
+    /* SoundCloud player heights */
+    .sc-h-sm iframe{ height: 166px; }
+    .sc-h-md iframe{ height: 240px; }
+    .sc-h-lg iframe{ height: 320px; }
+
+    /* description text */
+    .desc{
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+
+    /* make cards that contain players feel like "objects" but stay in style */
+    .card.player{
+      justify-content:flex-start;
+      min-height: 0;
+    }
+
+    /* responsive: revert to 1 column like home */
+    @media (max-width: 760px){
+      main.grid.mosaic{ grid-template-columns: 1fr; }
+      .span-2, .span-3, .span-4, .row-1, .row-2{ grid-column: auto; grid-row: auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="topbar" aria-label="Taal kiezen">
+        <button class="lang-btn" type="button" data-lang="nl" aria-pressed="true">nl</button>
+        <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">en</button>
+      </div>
+
+      <div class="name" data-i18n="name">YA'GEL SCHOONDERBEEK</div>
+      <div class="rule"></div>
+    </header>
+
+    <main class="grid mosaic" aria-label="DJ sets">
+      <!-- intro tile -->
+      <div class="card tilt-1 span-3 row-1">
+        <div>
+          <div class="label" data-i18n="dj_label">YAK</div>
+          <div class="meta" data-i18n="dj_meta">Een selectie van mijn radio shows en mixes.</div>
+        </div>
+      </div>
+
+      <!-- container where mixes will be rendered -->
+      <div id="mixes-root" style="display: contents;"></div>
+
+    </main>
+
+    <footer>
+      <a class="pill" href="music.html" data-i18n="pill_music">MUZIEK</a>
+      <a class="pill" href="home.html" data-i18n="pill_home">HOME</a>
+      <a class="pill" href="#" id="contactLink" data-i18n="pill_contact">CONTACT</a>
+    </footer>
+  </div>
+
+  <script>
+    // Theme: follow OS by default (auto). If you ever add a manual theme switch, store it as "theme".
+    (function(){
+      var savedTheme = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", savedTheme || "auto");
+    })();
+
+    /*
+      EDIT HERE: add / remove mixes in one place.
+
+      Each item supports:
+      - title: { nl: "...", en: "..." }
+      - desc:  { nl: "...", en: "..." }  (optional)
+      - url: SoundCloud set/track url
+      - size: layout + player height classes (mosaic)
+        Examples:
+          "span-2 row-1 sc-h-sm"
+          "span-3 row-2 sc-h-md"
+          "span-4 row-2 sc-h-lg"
+    */
+    var MIXES = [
+      {
+        title: { nl: "Radio Radio FM — 22.01.2025", en: "Radio Radio FM — 22.01.2025" },
+        desc:  { nl: "Progressive- en trance house.", en: "Progressive- en trance house." },
+        url:   "https://soundcloud.com/radioradiofm/rrfm-yak-22-01-2025",
+        size:  "span-3 row-2 sc-h-sm",
+        tilt:  "tilt-2"
+      },
+      {
+        title: { nl: "Radio TNP — 15.11.2024", en: "Radio TNP — 15.11.2024" },
+        desc:  { nl: "Slow jams, groove en balearica", en: "Slow jams, groove and balearica" },
+        url:   "https://soundcloud.com/radiotemponaopara/yak-15-11-2024",
+        size:  "span-3 row-2 sc-h-sm",
+        tilt:  "tilt-1"
+      },
+      {
+        title: { nl: "Radio 80000 — 10.09.2024", en: "Radio 80000 — 10.09.2024" },
+        desc:  { nl: "House en stampot bij de daklozenopvang", en: "House and 'stampot' at the homeless shelter" },
+        url:   "https://soundcloud.com/radio80000/appetizer-w-yak-yagel-100924",
+        size:  "span-3 row-2 sc-h-sm",
+        tilt:  "tilt-3"
+      },
+      {
+        title: { nl: "Studio \\K — 26.01.2024", en: "Studio \\K — 26.01.2024" },
+        desc:  { nl: "Progressive- en 90s house", en: "Progressive- and 90s house" },
+        url:   "https://soundcloud.com/ditisstudiok/yak-26012024",
+        size:  "span-3 row-2 sc-h-sm",
+        tilt:  "tilt-2"
+      },
+      {
+        title: { nl: "Radio TNP — 03.09.2022", en: "Radio TNP — 03.09.2022" },
+        desc:  { nl: "World en funk; Mijn allereerste radio show :——)", en: "World and funk; My very first radio show :——)" },
+        url:   "https://soundcloud.com/radiotemponaopara/yak-03-09-2022",
+        size:  "span-3 row-2 sc-h-sm",
+        tilt:  "tilt-1"
+      }
+    ];
+
+    function scEmbedSrc(soundcloudUrl){
+      // SoundCloud expects the URL in a query param. Use encodeURIComponent to be safe.
+      var encoded = encodeURIComponent(soundcloudUrl);
+      // Keep colors neutral (black/white) and avoid autoplay.
+      return "https://w.soundcloud.com/player/?url=" + encoded +
+        "&color=%23111111&auto_play=false&hide_related=true&show_comments=false" +
+        "&show_user=true&show_reposts=false&show_teaser=true&visual=false";
+    }
+
+    function renderMixes(lang){
+      var root = document.getElementById("mixes-root");
+      if(!root) return;
+      root.innerHTML = "";
+
+      MIXES.forEach(function(m){
+        var card = document.createElement("div");
+        card.className = "card player " + (m.tilt || "") + " " + (m.size || "");
+
+        var title = (m.title && (m.title[lang] || m.title.nl)) || "Mix";
+        var desc = m.desc ? (m.desc[lang] || m.desc.nl || "") : "";
+
+        card.innerHTML =
+          '<div>' +
+            '<div class="label">' + escapeHtml(title) + '</div>' +
+            '<div class="meta">soundcloud</div>' +
+            (desc ? '<div class="desc">' + escapeHtml(desc) + '</div>' : '') +
+            '<div class="embed ' + (m.size || "") + '">' +
+              '<iframe loading="lazy" allow="autoplay" src="' + scEmbedSrc(m.url) + '"></iframe>' +
+            '</div>' +
+          '</div>';
+
+        root.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // Language toggle (nl/en) + translate static bits + re-render mixes
+    (function(){
+      var dict = {
+        nl: {
+          name: "YA'GEL SCHOONDERBEEK",
+          dj_label: "YAK",
+          dj_meta: "Online radio shows / mixes",
+          pill_home: "HOME",
+          pill_music: "MUZIEK"
+        },
+        en: {
+          name: "YA'GEL SCHOONDERBEEK",
+          dj_label: "YAK",
+          dj_meta: "Online radio shows / mixes",
+          pill_home: "HOME",
+          pill_music: "MUSIC"
+        }
+      };
+
+      function applyLang(lang){
+        var pack = dict[lang] || dict.nl;
+        document.documentElement.lang = lang;
+
+        document.querySelectorAll("[data-i18n]").forEach(function(el){
+          var key = el.getAttribute("data-i18n");
+          if(pack[key]) el.textContent = pack[key];
+        });
+
+        document.querySelectorAll(".lang-btn").forEach(function(btn){
+          var isOn = btn.getAttribute("data-lang") === lang;
+          btn.setAttribute("aria-pressed", isOn ? "true" : "false");
+        });
+
+        localStorage.setItem("lang", lang);
+        renderMixes(lang);
+      }
+
+      var initial = localStorage.getItem("lang") || document.documentElement.lang || "nl";
+      if(!dict[initial]) initial = "nl";
+
+      // render once on load
+      applyLang(initial);
+
+      document.querySelectorAll(".lang-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          applyLang(btn.getAttribute("data-lang"));
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const user = "yagelschoonderbeek";
+      const domain = "gmail.com";
+      const link = document.getElementById("contactLink");
+
+      if (!link) return;
+
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.location.href = "mailto:" + user + "@" + domain;
+      });
+    })();
+  </script>
+</body>
+</html>

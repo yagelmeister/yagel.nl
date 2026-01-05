@@ -1,0 +1,303 @@
+{
+  "Groningen": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      399.5499758645932,
+      66.17285836784777
+    ]
+  },
+  "Fryslân": {
+    "type": "provincie",
+    "coords": [
+      311.9383322423099,
+      83.87249326142319
+    ]
+  },
+  "Drenthe": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      403.1342063271518,
+      144.3335703488683
+    ]
+  },
+  "Overijssel": {
+    "type": "provincie",
+    "coords": [
+      376.48221432747266,
+      204.74053925062253
+    ]
+  },
+  "Flevoland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      286.4064911533711,
+      190.66599855606455
+    ]
+  },
+  "Gelderland": {
+    "type": "provincie",
+    "coords": [
+      314.78752561053113,
+      262.06881955008885
+    ]
+  },
+  "Utrecht": {
+    "type": "provincie",
+    "coords": [
+      236.27368445715274,
+      268.16791515634577
+    ]
+  },
+  "Noord-Holland": {
+    "type": "provincie",
+    "coords": [
+      198.2719040995496,
+      188.8629550361402
+    ]
+  },
+  "Zuid-Holland": {
+    "type": "provincie",
+    "coords": [
+      159.1266629685391,
+      289.80993802551075
+    ]
+  },
+  "Zeeland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      87.22439683293487,
+      372.6689267131178
+    ]
+  },
+  "Noord-Brabant": {
+    "type": "provincie",
+    "coords": [
+      241.7129292961739,
+      357.19421468730525
+    ]
+  },
+  "Limburg": {
+    "type": "provincie",
+    "coords": [
+      321.6298289548537,
+      415.60949668669946
+    ]
+  },
+  "Achterhoek": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      378.2304928563725,
+      283.8961242737978
+    ]
+  },
+  "Amersfoort": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      260.8634284221174,
+      251.93813568350924
+    ]
+  },
+  "Drechtsteden": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      185.43027718363282,
+      317.75493500632456
+    ]
+  },
+  "FoodValley": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      293.0098495749627,
+      266.30427285242604
+    ]
+  },
+  "Friesland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      307.0126067114088,
+      84.35947013229634
+    ]
+  },
+  "Gooi en Vechtstreek": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      235.43050779674968,
+      237.80820125537866
+    ]
+  },
+  "Gorinchem": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      212.17425300352613,
+      300.019775314433
+    ]
+  },
+  "Groot Amsterdam": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      200.792752733537,
+      224.40942509870365
+    ]
+  },
+  "Haaglanden": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      139.2138590884731,
+      278.88511120972
+    ]
+  },
+  "Helmond-De Peel": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      301.07439289430704,
+      375.60170867286706
+    ]
+  },
+  "Holland Rijnland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      175.12118866739166,
+      255.05942011408843
+    ]
+  },
+  "Midden-Brabant": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      222.02620117128083,
+      352.0285213177631
+    ]
+  },
+  "Midden-Gelderland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      324.1762423250899,
+      287.38955242870634
+    ]
+  },
+  "Midden-Holland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      190.50668089067005,
+      281.6820901185765
+    ]
+  },
+  "Midden-Limburg": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      315.3036069966437,
+      415.471987631704
+    ]
+  },
+  "Midden-Utrecht": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      231.53192221149834,
+      265.02651593293285
+    ]
+  },
+  "Noord-Holland (Noord)": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      204.73922577463054,
+      147.5403126045985
+    ]
+  },
+  "Noord-Limburg": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      337.12730014689805,
+      383.7612443473081
+    ]
+  },
+  "Noordoost-Brabant": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      282.36237876073767,
+      335.4931625769268
+    ]
+  },
+  "Regio Zwolle": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      347.14312507899274,
+      180.15583041378977
+    ]
+  },
+  "Rijk van Nijmegen": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      306.2086113799601,
+      314.0088688462092
+    ]
+  },
+  "Rijnmond": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      143.4410075501237,
+      310.1603864337676
+    ]
+  },
+  "Rivierenland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      253.87779414684394,
+      304.5640378145981
+    ]
+  },
+  "Twente": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      404.78915318207237,
+      224.59543340726214
+    ]
+  },
+  "Veluwe Stedendriehoek": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      324.85260253908586,
+      240.58372336891262
+    ]
+  },
+  "West-Brabant": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      175.64519028114688,
+      357.0208027753788
+    ]
+  },
+  "Zaanstreek / Waterland": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      209.20069973401246,
+      191.3926476011511
+    ]
+  },
+  "Zuid-Holland Centraal": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      160.94289494642692,
+      274.62860219506
+    ]
+  },
+  "Zuid-Kennemerland en IJmond": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      176.23030700659461,
+      209.32629384756729
+    ]
+  },
+  "Zuid-Limburg": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      316.0728311981078,
+      478.8382125909857
+    ]
+  },
+  "Zuidoost-Brabant": {
+    "type": "arbeidsmarkt",
+    "coords": [
+      259.25102868673594,
+      385.5360095691376
+    ]
+  }
+}
