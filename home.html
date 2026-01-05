@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="nl">
+<head>
+    <link rel="stylesheet" href="styling.css" />
+<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yagel.nl</title>
+  <meta name="description" content="Portfolio en CV van YA'GEL SCHOONDERBEEK: Data, Koken, Muziek." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<!-- KIES HIER JE THEMA: mono | paper | night -->
+<body>
+  <div class="wrap">
+    <header>
+      <div class="topbar" aria-label="Taal kiezen">
+        <button class="lang-btn" type="button" data-lang="nl" aria-pressed="true">nl</button>
+        <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">en</button>
+      </div>
+
+      <div class="name" data-i18n="name">YA'GEL SCHOONDERBEEK</div>
+      <div class="rule"></div>
+    </header>
+
+    <main class="grid" aria-label="Hoofdcategorieën">
+      <a class="card tilt-1" href="data.html">
+        <div>
+          <img src="images/data/ajax/ajax heatmap parameters.png" alt="" class="card-image" />
+          <div class="label">DATA</div>
+          <div class="meta">Inzichten in professioneel voetbal & de Nederlandse educatiemarkt</div>
+        </div>
+      </a>
+
+      <a class="card tilt-2" href="koken.html">
+        <div>
+          <img src="images/koken/catering/ritas broodje.JPG" alt="" class="card-image" />
+          <div class="label" data-i18n="tile_cooking">KOKEN</div>
+          <div class="meta" data-i18n="meta_cooking">private catering, dishes at a homeless shelter & sourdough adventures</div>
+        </div>
+      </a>
+
+      <a class="card tilt-3" href="music.html">
+        <div>
+          <img src="images/muziek/yak/YAK_cover.JPG" alt="" class="card-image" />
+          <div class="label" data-i18n="tile_music">MUZIEK</div>
+          <div class="meta" data-i18n="meta_music">deejayen, mpsoundsystem & een zelf-gebouwde muziekstudio</div>
+        </div>
+      </a>
+    </main>
+
+    <footer>
+      <a class="pill" href="cv.html" data-i18n="pill_cv">CV</a>
+      <a class="pill" href="#" id="contactLink" data-i18n="pill_contact">CONTACT</a>
+    </footer>
+  </div>
+
+  <script>
+    // Theme: follow OS by default (auto). Users can still hardcode mono/paper/night later if you want.
+    // If you ever add a manual theme switch, store it in localStorage as "theme".
+    (function(){
+      var savedTheme = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", savedTheme || "auto");
+    })();
+
+    // Language toggle (nl/en)
+    (function(){
+      var dict = {
+        nl: {
+          name: "YA'GEL SCHOONDERBEEK",
+          tile_data: "DATA",
+          meta_data: "Inzichten in professioneel voetbal & de Nederlandse educatiemarkt",
+          tile_cooking: "KOKEN",
+          meta_cooking: "private catering, gerechten bij de daklozenopvang & zuurdesem avonturen",
+          tile_music: "MUZIEK",
+          meta_music: "deejayen, mpsoundsystem & een zelf-gebouwde muziekstudio",
+          pill_cv: "CV",
+          pill_contact: "CONTACT"
+        },
+        en: {
+          name: "YA'GEL SCHOONDERBEEK",
+          tile_data: "DATA",
+          meta_data: "Insights in professional football & the Dutch educational market",
+          tile_cooking: "COOKING",
+          meta_cooking: "private catering, dishes at a homeless shelter & sourdough adventures",
+          tile_music: "MUSIC",
+          meta_music: "deejaying, mpsoundsystem & a self-built music studio",
+          pill_cv: "CV",
+          pill_contact: "CONTACT"
+        }
+      };
+
+      function applyLang(lang){
+        var pack = dict[lang] || dict.nl;
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach(function(el){
+          var key = el.getAttribute("data-i18n");
+          if(pack[key]) el.textContent = pack[key];
+        });
+
+        document.querySelectorAll(".lang-btn").forEach(function(btn){
+          var isOn = btn.getAttribute("data-lang") === lang;
+          btn.setAttribute("aria-pressed", isOn ? "true" : "false");
+        });
+
+        localStorage.setItem("lang", lang);
+      }
+
+      var initial = localStorage.getItem("lang") || document.documentElement.lang || "nl";
+      if(!dict[initial]) initial = "nl";
+      applyLang(initial);
+
+      document.querySelectorAll(".lang-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          applyLang(btn.getAttribute("data-lang"));
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const user = "yagelschoonderbeek";
+      const domain = "gmail.com";
+      const link = document.getElementById("contactLink");
+
+      if (!link) return;
+
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.location.href = "mailto:" + user + "@" + domain;
+      });
+    })();
+  </script>
+</body>
+</html>

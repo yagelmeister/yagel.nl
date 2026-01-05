@@ -1,0 +1,387 @@
+/* =========================
+       THEMA OPTIES (kies er 1)
+       Zet data-theme op html:
+       "mono" | "paper" | "night"
+       ========================= */
+
+html[data-theme="mono"]{
+  --bg:#ffffff;
+  --fg:#0f0f0f;
+  --muted:#6f6f6f;
+  --line:#0f0f0f;
+  --softline:#e6e6e6;
+  --card:#ffffff;
+  --shadow: none;
+  --accent: #0f0f0f;
+}
+
+/* net iets warmer, alsof papier */
+html[data-theme="paper"]{
+  --bg:#fbfaf7;
+  --fg:#111111;
+  --muted:#6a6a6a;
+  --line:#111111;
+  --softline:#e4e0d6;
+  --card:#fbfaf7;
+  --shadow: none;
+  --accent: #111111;
+}
+
+/* donker maar nog steeds sober (als je ooit inverse wil) */
+html[data-theme="night"]{
+  --bg:#0b0b0b;
+  --fg:#f2f2f2;
+  --muted:#b8b8b8;
+  --line:#f2f2f2;
+  --softline:#2a2a2a;
+  --card:#0b0b0b;
+  --shadow: none;
+  --accent: #f2f2f2;
+}
+
+/* OS dark/light support.
+   If user hasn't chosen a manual theme, we follow the OS.
+   JS sets data-theme="auto" by default. */
+html[data-theme="auto"]{
+  --bg:#fbfaf7;
+  --fg:#111111;
+  --muted:#6a6a6a;
+  --line:#111111;
+  --softline:#e4e0d6;
+  --card:#fbfaf7;
+  --shadow: none;
+  --accent: #111111;
+}
+@media (prefers-color-scheme: dark){
+  html[data-theme="auto"]{
+    --bg:#0b0b0b;
+    --fg:#f2f2f2;
+    --muted:#b8b8b8;
+    --line:#f2f2f2;
+    --softline:#2a2a2a;
+    --card:#0b0b0b;
+    --shadow: none;
+    --accent: #f2f2f2;
+  }
+}
+
+/* =========================
+   TYPOGRAFIE VARS
+   Kies bij :root welke set
+   ========================= */
+
+:root{
+  /* Optie A (Inter + JetBrains Mono) */
+  /* --font-head: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; */
+
+  /* Als je Optie B aanzet: uncomment dit blok en comment Optie A vars
+  --font-head: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  */
+
+  /* Als je Optie C aanzet: uncomment dit blok en comment Optie A vars */
+  --font-head: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-body: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  line-height:1.35;
+  letter-spacing: -0.01em;
+}
+
+.wrap{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 56px 24px 40px;
+  min-height: 100svh;
+  display:flex;
+  flex-direction:column;
+  gap: 40px;
+}
+
+header{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+/* top-right language switch */
+.topbar{
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+  align-items:center;
+}
+.lang-btn{
+  appearance:none;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 999px;
+}
+.lang-btn[aria-pressed="true"]{
+  color: var(--fg);
+  border-color: var(--line);
+}
+.lang-btn:focus-visible{
+  outline: 2px solid var(--line);
+  outline-offset: 2px;
+}
+
+.name{
+  font-family:var(--font-head);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: clamp(24px, 3vw, 32px);
+}
+
+.rule{
+  border-top: 1px solid var(--softline);
+  margin-top: 8px;
+}
+
+/* grid van 3 tegels */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.card{
+  position:relative;
+  background:var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 12px 4px 12px 4px;
+  padding: 22px 20px 18px;
+  min-height: 128px;
+  box-shadow: var(--shadow);
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+
+  /* “misprint” vibe: net niet perfect recht */
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.card:hover{
+  transform: translateY(-2px) rotate(var(--tilt, 0deg));
+  background: transparent;
+}
+
+.label{
+  font-family: var(--font-head);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 18px;
+}
+
+.meta{
+  font-family: var(--font-mono);
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+/* subtiele “offset border” als kunstzinnige twist */
+.card::after{
+  content:"";
+  position:absolute;
+  inset: 6px -6px -6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px 4px 12px 4px;
+  opacity: 0.16;
+  pointer-events:none;
+  transition: opacity 160ms ease;
+}
+.card:hover::after{ opacity: 0.28; }
+
+ /* image inside cards */
+    .card-image{
+        width:100%;
+        aspect-ratio: 1 / 1;   /* square: height = width */
+        object-fit: cover;
+        margin-bottom:12px;
+        border:1px solid var(--softline);
+    }
+
+/* onderaan cv/contact */
+footer{
+  margin-top:auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--softline);
+  display:flex;
+  gap: 12px;
+  justify-content:center;
+}
+
+.pill{
+  border: 1.5px solid var(--line);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration:none;
+  color:inherit;
+  transition: transform 160ms ease, background 160ms ease;
+}
+.pill:hover{
+  transform: translateY(-1px);
+  background: rgba(0,0,0,0.03);
+}
+html[data-theme="night"] .pill:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+/* ====== MOSAIC GRID (shared component) ====== */
+.grid.mosaic{
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-flow: dense;
+  gap: 18px;
+}
+.span-2{ grid-column: span 2; }
+.span-3{ grid-column: span 3; }
+.span-4{ grid-column: span 4; }
+.row-1{ grid-row: span 1; }
+.row-2{ grid-row: span 2; }
+
+/* cards that contain media/players */
+.card.player{
+  justify-content:flex-start;
+  min-height: 0;
+}
+
+/* description text used in radio/mps style pages */
+.desc{
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: pre-line;
+}
+
+/* ====== SLIDER (shared component) ====== */
+.slider{
+  margin-top: 12px;
+  border-top: 1px solid var(--softline);
+  padding-top: 12px;
+}
+
+.slider-frame{
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--softline);
+  overflow: hidden;
+  background: transparent;
+}
+
+.slider-frame img{
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: none;
+  will-change: opacity;
+}
+
+.slider-frame img.is-active{
+  display: block;
+}
+
+.slider-controls{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-btn{
+  appearance:none;
+  background: transparent;
+  border: 1.5px solid var(--line);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.slider-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(0,0,0,0.03);
+}
+html[data-theme="night"] .slider-btn:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+.slider-dots{
+  display:flex;
+  gap: 6px;
+  align-items:center;
+  justify-content:center;
+}
+
+.dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  opacity: 0.45;
+  cursor:pointer;
+}
+
+.dot[aria-pressed="true"]{
+  opacity: 1;
+  background: var(--accent);
+}
+
+/* responsive */
+@media (max-width: 760px){
+  .grid{ grid-template-columns: 1fr; }
+  .wrap{ padding-top: 36px; gap: 28px; }
+  footer{ justify-content:flex-start; }
+
+  /* mosaic collapses to 1 col */
+  .grid.mosaic{ grid-template-columns: 1fr; }
+  .span-2, .span-3, .span-4, .row-1, .row-2{ grid-column: auto; grid-row: auto; }
+}
+
+/* alleen voor de linksonder-schets vibe: 3 tegels net niet identiek */
+.tilt-1{ --tilt: -0.4deg; }
+.tilt-2{ --tilt:  0.35deg; }
+.tilt-3{ --tilt: -0.2deg; }
+
+/* toegankelijkheid: minder beweging */
+@media (prefers-reduced-motion: reduce){
+  .card, .pill, .slider-btn{ transition:none; }
+  .card:hover{ transform: rotate(var(--tilt, 0deg)); }
+}
